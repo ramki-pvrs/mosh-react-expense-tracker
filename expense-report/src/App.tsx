@@ -1,5 +1,6 @@
 import { useState } from "react";
 import ExpenseList from "./expense-tracker/components/ExpenseList";
+import ExpenseFilter from "./expense-tracker/components/ExpenseFilter";
 
 function App() {
   const expenses_UNUSED = [
@@ -9,6 +10,10 @@ function App() {
     { id: 4, description: "ddd", amount: 40, category: "TV" },
     { id: 5, description: "eee", amount: 50, category: "Mobile" },
   ];
+
+  //state for filtering the whole table with specific category
+  //Utils, TV and Mobile are the categories in hard coded list below
+  const [selectedCategory, setSelectedCategory] = useState("");
 
   //for expenses, its the state of the data of all expenses displayed on the Browser
   //so in theory you have to maintain the expenses list as a state
@@ -22,6 +27,14 @@ function App() {
     { id: 5, description: "eee", amount: 50, category: "Mobile" },
   ]);
 
+  let visibleExpenses = selectedCategory
+    ? expenses.filter((e: any) => e.category === selectedCategory)
+    : expenses;
+
+  if (selectedCategory === "All Categories") {
+    visibleExpenses = expenses;
+  }
+
   return (
     <div>
       <p> Init </p>
@@ -30,13 +43,22 @@ function App() {
       {/* using filter method on expenses list object, equivalent to delete operation */}
       {/* may be this filter method may not change the original object; so move setExpenses as separate function */}
       {/* and deal with complexities later */}
+      <div className="mb-3">
+        <ExpenseFilter
+          onSelectCategory={(category) => setSelectedCategory(category)}
+        ></ExpenseFilter>
+      </div>
       <ExpenseList
-        expenses={expenses}
-        onDelete={(id) => setExpenses(expenses.filter((e: any) => e.id !== id))}
+        expenses={visibleExpenses}
+        onDelete={(id) =>
+          setExpenses(visibleExpenses.filter((e: any) => e.id !== id))
+        }
       ></ExpenseList>
     </div>
   );
 }
+
+//
 
 //onDelete={(id) => console.log("delete req on expense id=", id)}
 
