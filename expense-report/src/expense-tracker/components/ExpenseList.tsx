@@ -3,6 +3,16 @@
 //so two interfaces, first one is single expense obj
 //second is list of expense object
 
+//WHY Expense, single expense is interface instead of some other type like 'type'
+//https://stackoverflow.com/questions/49562569/typed-react-props-as-type-or-an-interface
+//Here's some pros for Interface:
+
+//(1) define, more specifically, the shape of objects and their contracts,
+//(2) has declaration merging,
+//(3) can be implemented by classes, and
+//(4) just looks syntactically prettier (imo)
+//https://www.reddit.com/r/reactjs/comments/14q6nyr/interface_vs_type_what_should_i_use_in/
+
 interface Expense {
   id: number;
   description: string;
@@ -18,6 +28,7 @@ interface Props {
 }
 
 function ExpenseList({ expenses, onDelete }: Props) {
+  if (expenses.length === 0) return null;
   return (
     <table className="table table-border">
       <thead>
@@ -64,7 +75,8 @@ function ExpenseList({ expenses, onDelete }: Props) {
           {/* reduce method has arry function with 2 params; acc for accumulator and individual item; */}
           {/* 0 is default for accumulate which we need to pass */}
           <td>
-            ${expenses
+            $
+            {expenses
               .reduce((acc, expense) => expense.amount + acc, 0)
               .toFixed(2)}
           </td>
