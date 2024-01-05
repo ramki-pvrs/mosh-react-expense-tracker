@@ -3,6 +3,11 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import categories from "../categories";
 
+//obSubmit: takes data of type ExenseFormData and returns void
+interface Props {
+  onSubmit: (data: ExpenseFormData) => void;
+}
+
 //.mb-3>label.form-labl+input.form-control and tab
 //for select list error message object is slighly different, errorMap is required with arrow function
 const schema = z.object({
@@ -21,15 +26,21 @@ const schema = z.object({
 });
 
 type ExpenseFormData = z.infer<typeof schema>;
-
-function ExpenseForm() {
+//reset form is key word, you have to use only reset; resetForm for example will not work
+function ExpenseForm({ onSubmit }: Props) {
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<ExpenseFormData>({ resolver: zodResolver(schema) });
   return (
-    <form onSubmit={handleSubmit((data) => console.log(data))}>
+    <form
+      onSubmit={handleSubmit((data) => {
+        onSubmit(data);
+        reset();
+      })}
+    >
       <div className="mb-3">
         <label htmlFor="description" className="form-labl"></label>
         <input

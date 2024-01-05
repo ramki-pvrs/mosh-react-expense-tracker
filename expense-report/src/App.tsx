@@ -36,12 +36,21 @@ function App() {
   if (selectedCategory === "All Categories") {
     visibleExpenses = expenses;
   }
-
+  //check console.log first; convert to setExpense function later
+  //<ExpenseForm onSubmit={(data) => console.log(data)}></ExpenseForm>
   return (
     <div>
       <p> Init </p>
       <div className="mb-5">
-        <ExpenseForm></ExpenseForm>
+        <ExpenseForm
+          onSubmit={(expense) =>
+            //you can also use immer for this spread operator to pass into setExpenses
+            //expense object has only description, amount and category
+            //but the expenses has id for each expense in it, so you need to add it to expense object
+            //before inserting into table (dB)
+            setExpenses([...expenses, { ...expense, id: expenses.length + 1 }])
+          }
+        ></ExpenseForm>
       </div>
 
       {/*when you pass id to onDelete, it is inturn passed to setExpenses */}
