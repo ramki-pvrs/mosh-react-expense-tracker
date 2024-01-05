@@ -1,6 +1,8 @@
 import { useState } from "react";
 import ExpenseList from "./expense-tracker/components/ExpenseList";
 import ExpenseFilter from "./expense-tracker/components/ExpenseFilter";
+import ExpenseForm from "./expense-tracker/components/ExpenseForm";
+import categories from "./expense-tracker/categories";
 
 function App() {
   const expenses_UNUSED = [
@@ -38,6 +40,10 @@ function App() {
   return (
     <div>
       <p> Init </p>
+      <div className="mb-5">
+        <ExpenseForm></ExpenseForm>
+      </div>
+
       {/*when you pass id to onDelete, it is inturn passed to setExpenses */}
       {/* for delete, setExpenses, will set the expenses list minus this id passed */}
       {/* using filter method on expenses list object, equivalent to delete operation */}
