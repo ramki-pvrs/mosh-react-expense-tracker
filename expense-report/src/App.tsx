@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import axios from "axios";
+import axios, { CanceledError } from "axios";
 import ExpenseList from "./expense-tracker/components/ExpenseList";
 import ExpenseFilter from "./expense-tracker/components/ExpenseFilter";
 import ExpenseForm from "./expense-tracker/components/ExpenseForm";
@@ -99,10 +99,35 @@ function App() {
 
   //axios.get<User[]> is the data object fetched are of type User defined above in interface User
   //now res.data[0]. will auto complete to id, name, username
+  const [error, setError] = useState("");
+  //isLoading and setLoading for spinner
+  const [isLoading, setLoading] = useState(false);
+
   useEffect(() => {
+    //user may navigate away from fetch and you should be able to Abort fetch
+    //modern browsers give AbortController object
+    const controller = new AbortController();
+
+    //axios.get returns a promise
+    //if promise is resolved, we get response obj
+    //if promise is rejected due to some error, we get error object
+
+    //return controller.abort is part of clean-up/un-subscribe/disconnect kind of functionality
+    setLoading(true);
     axios
-      .get<User[]>("https://jsonplaceholder.typicode.com/users")
-      .then((res) => setUsers(res.data)); //Leanne Graham
+      .get<User[]>("https://jsonplaceholder.typicode.com/users", {
+        signal: controller.signal,
+      })
+      .then((res) => {
+        setUsers(res.data);
+        setLoading(false);
+      }) //Leanne Graham
+      .catch((err) => {
+        if (err instanceof CanceledError) return;
+        setError(err.message);
+        setLoading(false);
+      });
+    return () => controller.abort();
   }, []);
   //above line firtly was
   //res) => console.log(res.data[0].name)
@@ -110,11 +135,15 @@ function App() {
   return (
     <div>
       <p> Init </p>
-      <ul>
-        {users.map((user) => (
-          <li key={user.id}>{user.name}</li>
-        ))}
-      </ul>
+      <>
+        {error && <p className="text-danger">{error}</p>}
+        {isLoading && <div className="spinner-border"></div>}
+        <ul>
+          {users.map((user) => (
+            <li key={user.id}>{user.name}</li>
+          ))}
+        </ul>
+      </>
       <div className="mb-3">
         <input ref={ref} type="text" className="form-control" />
       </div>

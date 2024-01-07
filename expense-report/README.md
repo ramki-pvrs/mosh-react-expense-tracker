@@ -259,3 +259,6 @@ npm install zod
 FETCH Data:
 jsonplaceholder.typicode.com
 npm install axios
+
+axios makes http requests to server
+https://jsonplaceholder.typicode.com/
