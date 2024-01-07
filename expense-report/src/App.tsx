@@ -1,8 +1,21 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import axios from "axios";
 import ExpenseList from "./expense-tracker/components/ExpenseList";
 import ExpenseFilter from "./expense-tracker/components/ExpenseFilter";
 import ExpenseForm from "./expense-tracker/components/ExpenseForm";
 import categories from "./expense-tracker/categories";
+import ProductList from "./expense-tracker/components/ProductList";
+import { literal } from "zod";
+
+//enable TypeScript to add auto completion to response.data
+//by manually addig all keys as atttributes of the object below
+//onl
+
+interface User {
+  id: number;
+  name: string;
+  username: string;
+}
 
 function App() {
   const expenses_UNUSED = [
@@ -12,6 +25,38 @@ function App() {
     { id: 4, description: "ddd", amount: 40, category: "TV" },
     { id: 5, description: "eee", amount: 50, category: "Mobile" },
   ];
+
+  /*
+    useEffect new topic
+    Effect hook is to execute piece of code after component is rendered
+    lets say there is an input put field and you want to focus on it 
+    after it is rendered (may be when user moves the cursor there, will come to that)
+    if you just add focus, the component becomes impure
+    but if you add focus piece of code insder useEffect function, component is convereted as pure again??
+    the ref for focus on input field is a side effect; input field is rendered already
+    but when moust moved, focus on it; blue shade around input field
+    NOTE: to avoid infinite loop of calling the useEffect, you need to add dependency 
+    as param to the useEffect arrow function; [] empty one is for doing the effect once
+    after component is rendered
+    you can also control it to run the effect after use action on the browse like selecting an item
+    similar to useState, useEffect can be called on top component and not inside loops or if condition
+    multiple calls of useEffect is possible
+    see the document.title below
+
+    useEffect Dependencies: executes after each render, but you have to avoid infinite loop
+
+    */
+
+  const ref = useRef<HTMLInputElement>(null);
+  //useEfffect is confusing name, afterRender would have been a more opt name for this hook
+  useEffect(() => {
+    //Side Effect
+    if (ref.current) ref.current.focus();
+  });
+
+  useEffect(() => {
+    document.title = "Ramki App";
+  });
 
   //state for filtering the whole table with specific category
   //Utils, TV and Mobile are the categories in hard coded list below
@@ -38,9 +83,51 @@ function App() {
   }
   //check console.log first; convert to setExpense function later
   //<ExpenseForm onSubmit={(data) => console.log(data)}></ExpenseForm>
+
+  const [category, setCategory] = useState("");
+
+  //fetach users from jsonplaceholder using axios
+  const [users, setUsers] = useState<User[]>([]);
+  //axios returns a promise
+  //Promise: an object that holds eventual result or failure of an async operation
+  //all promises have a method called then and it takes a callback function
+  //callback is executed when promise is resoved and result is ready
+  //param is response, or res in short
+
+  //res is complete response object including headers and status code and status name and all
+  //res.data shows only data
+
+  //axios.get<User[]> is the data object fetched are of type User defined above in interface User
+  //now res.data[0]. will auto complete to id, name, username
+  useEffect(() => {
+    axios
+      .get<User[]>("https://jsonplaceholder.typicode.com/users")
+      .then((res) => setUsers(res.data)); //Leanne Graham
+  }, []);
+  //above line firtly was
+  //res) => console.log(res.data[0].name)
+
   return (
     <div>
       <p> Init </p>
+      <ul>
+        {users.map((user) => (
+          <li key={user.id}>{user.name}</li>
+        ))}
+      </ul>
+      <div className="mb-3">
+        <input ref={ref} type="text" className="form-control" />
+      </div>
+      {/* Keep track of selected category in state variable */}
+      <select
+        className="form-select"
+        onChange={(event) => setCategory(event?.target.value)}
+      >
+        <option value=""></option>
+        <option value="Clothing">Clothing</option>
+        <option value="Household">Household</option>
+      </select>
+      <ProductList category={category}></ProductList>
       <div className="mb-5">
         <ExpenseForm
           onSubmit={(expense) =>
