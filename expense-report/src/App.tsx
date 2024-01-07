@@ -132,15 +132,44 @@ function App() {
   //above line firtly was
   //res) => console.log(res.data[0].name)
 
+  const deleteUser = (user: User) => {
+    //in case axios.delete promise is rejected (delete failed)
+    //in GUI you have to restore the origial users list
+    //because we are using Optimisitic delete, that is
+    //delete in GUI first and then persist it in server by axios.delete call
+    //for that you have to retain the original user list here
+
+    const originalUsers = [...users];
+
+    setUsers(users.filter((u) => u.id !== user.id));
+    axios
+      .delete("https://jsonplaceholder.typicode.com/usersx/" + user.id)
+      .catch((err) => {
+        setError(err.message);
+        setUsers(originalUsers);
+      });
+  };
+
   return (
     <div>
       <p> Init </p>
       <>
         {error && <p className="text-danger">{error}</p>}
         {isLoading && <div className="spinner-border"></div>}
-        <ul>
+        <ul className="list-group">
           {users.map((user) => (
-            <li key={user.id}>{user.name}</li>
+            <li
+              key={user.id}
+              className="list-group-item d-flex justify-content-between"
+            >
+              {user.name}
+              <button
+                className="btn btn-outline-danger"
+                onClick={() => deleteUser(user)}
+              >
+                Delete
+              </button>
+            </li>
           ))}
         </ul>
       </>

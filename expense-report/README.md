@@ -262,3 +262,9 @@ npm install axios
 
 axios makes http requests to server
 https://jsonplaceholder.typicode.com/
+
+- Deleting Data
+  -- convert the user list received as a list-group object with bootstrap for list-group
+  -- add a delete button for each list item
+- to have the delete button formatted properly, add a flex styling for each list-group-item
+  --
