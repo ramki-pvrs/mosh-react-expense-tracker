@@ -11,6 +11,19 @@ import { literal } from "zod";
 //by manually addig all keys as atttributes of the object below
 //onl
 
+//delete user steps:
+//add Delete button in each of the user row (users are just json response from axios.get call)
+//when use clicks on Delete button, onClick event calls a callback function deleteUser
+//with that line user object
+//deleteUser function calls setUsers interface and set the new users by FILTERING OUT
+//the user asked to be deleted
+//there are two delete types Optimisting and Pessimistic
+//Optimistic is update GUI first with filtered out users list assuming
+//server persistent api call will be successful (axios.delete call)
+//if in case promise is rejected, you have forcefully update GUI again with
+//all users + deleted user so that end user knows that delete was not successful
+//and no change was made to users list and go for debugging
+
 interface User {
   id: number;
   name: string;
@@ -94,6 +107,35 @@ function App() {
   //callback is executed when promise is resoved and result is ready
   //param is response, or res in short
 
+  //RAMKI NOTES: for delete onClick has a callback function because
+  //when you click Delete, the user object shd be used by the deleteUser function
+  //which is called later than when passed
+
+  //for createUser you dont need a callback because its a new user getting created when called
+  //almost immediately
+  //callback is when you want the function to be executed later with parameters passed now
+
+  //create user steps
+  //add a single button button.btn.btn-primary.mb-3 called Create User
+  //you create manually a new user object in js; in production it could be a form submission
+  //or some other event to create a new user
+  //Optimisitic creation
+  //because you have an interface for Users and setUsers is a method in it
+  //call setUsers and combine the new user object and existing users ...users - destructured
+  //once GUI is updated, sent POST request with new user object in the body
+  //the dummy api end point https://jsonplaceholder.typicode.com/users
+  //will send back a new user object
+  //but if you click multiple times you get the same user id and name from dummy server
+  //so in consolde you will see error for user list item because each list item
+  //Warning: Encountered two children with the same key, `0`. Keys should be unique so that components maintain
+  //their identity across updates. Non-unique keys may cause children to be duplicated
+  //and/or omitted — the behavior is unsupported and could change in a future version.
+  //in React is supposed to have a unique id but because its dummy, you get the same id back from server
+  //your axios.post promise may be resolved or rejected, based on which .then and .catch
+  //code block will handle the logic
+  //if resolved successfully, you add the new user object
+  //if rejected, you reset the users list to originalUsers in GUI (because Optimisam failed)
+
   //res is complete response object including headers and status code and status name and all
   //res.data shows only data
 
@@ -143,7 +185,40 @@ function App() {
 
     setUsers(users.filter((u) => u.id !== user.id));
     axios
-      .delete("https://jsonplaceholder.typicode.com/usersx/" + user.id)
+      .delete("https://jsonplaceholder.typicode.com/users/" + user.id)
+      .catch((err) => {
+        setError(err.message);
+        setUsers(originalUsers);
+      });
+  };
+
+  const addUser = () => {
+    const originalUsers = [...users];
+
+    //dummy new user object; in production it may come from form submission or some other event
+    //id 0 here means user is not saved yet and on return from axios.post,
+    //server would have generated the id which will be used on successful promise resolution
+    const newUser = { id: 0, name: "Ramki S", username: "ramki" };
+    //combine newUser to existingUsers and update the users list
+    //this is a change in interface which React will recognise and update the GUI
+
+    setUsers([newUser, ...users]);
+
+    //being Optimistice Add User, GUI was already updated with setUsers change
+    //now post it to server for persistence
+    //newUser in body of post req
+
+    //note new user id is generated in server and send back in response data
+
+    //typically its like .then((res) => setUsers([res.data, ...users]))
+    //res.data in this case is returned user object with id, name and username
+    //but to be better approach
+    //destructure res.data to get only data property and alias it as savedUser
+    //because data as word is not explanatory about what it is
+    //savedUser alias is good to use
+    axios
+      .post("https://jsonplaceholder.typicode.com/users", newUser)
+      .then(({ data: savedUser }) => setUsers([savedUser, ...users]))
       .catch((err) => {
         setError(err.message);
         setUsers(originalUsers);
@@ -156,6 +231,9 @@ function App() {
       <>
         {error && <p className="text-danger">{error}</p>}
         {isLoading && <div className="spinner-border"></div>}
+        <button className="btn-btn-primary mb-3" onClick={addUser}>
+          Add User
+        </button>
         <ul className="list-group">
           {users.map((user) => (
             <li
