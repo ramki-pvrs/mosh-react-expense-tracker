@@ -225,28 +225,62 @@ function App() {
       });
   };
 
+  const updateUser = (user: User) => {
+    const originalUsers = [...users];
+
+    const updatedUser = { ...user, name: user.name + "!" }; //just updated name with !
+    //update User is get all the users using map and if user matches to updatedUser
+    //return updatedUser otherwise u - original user item
+    setUsers(users.map((u) => (u.id === user.id ? updatedUser : u)));
+
+    axios
+      .patch(
+        "https://jsonplaceholder.typicode.com/users/" + user.id,
+        updatedUser
+      )
+      .then(() => {
+        console.log("Update User Successful");
+      })
+      .catch((err) => {
+        setError(err.message);
+        setUsers(originalUsers);
+      });
+  };
+
   return (
     <div>
       <p> Init </p>
       <>
         {error && <p className="text-danger">{error}</p>}
         {isLoading && <div className="spinner-border"></div>}
-        <button className="btn-btn-primary mb-3" onClick={addUser}>
+        <button className="btn btn-primary mb-3" onClick={addUser}>
           Add User
         </button>
+
         <ul className="list-group">
           {users.map((user) => (
             <li
               key={user.id}
               className="list-group-item d-flex justify-content-between"
             >
+              {/* user.name, Update and Delete are three objects for d-flex; so update btn position goes for a toss */}
+              {/* so put two buttons inside div so that for d-flex it is only two objects and they are positioned well */}
+              {/*mx-1 is margin class in bootstrap, shows space between buttons */}
               {user.name}
-              <button
-                className="btn btn-outline-danger"
-                onClick={() => deleteUser(user)}
-              >
-                Delete
-              </button>
+              <div>
+                <button
+                  className="btn btn-outline-secondary mx-1"
+                  onClick={() => updateUser(user)}
+                >
+                  Update
+                </button>
+                <button
+                  className="btn btn-outline-danger"
+                  onClick={() => deleteUser(user)}
+                >
+                  Delete
+                </button>
+              </div>
             </li>
           ))}
         </ul>
