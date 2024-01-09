@@ -9,7 +9,7 @@ import { literal } from "zod";
 
 //from api-client.ts default export without braces
 //named export within braces
-import { CanceledError } from "./services/apiClient";
+//import apiClient, { CanceledError } from "./services/apiClient";
 import userServices, { User } from "./services/userServices";
 
 //axios.get, axios.post, axios.patch uses same api end point repetadly
@@ -57,19 +57,6 @@ interface User {
   username: string;
 }
 */
-
-//even userServices is not generic enought for http services
-//because end point could be users, posts, students ....
-//but get all such entities, create, delete, update HTTP operations are same
-//you have to just pass the type of entity and id for single item when required
-//http services then can be common and better modularization
-//add httpServices.ts in services and follow-on
-
-//<T> is generic type and can be used as a place holder whereever type cast is required
-//<T> can also extend an interface for TypeScript to know what attributes are possible with this type
-//Create generic httpServices.ts for given entity of type <T>, generic type
-//for all CRUD ops
-
 function App() {
   const expenses_UNUSED = [
     { id: 1, description: "aaa", amount: 10, category: "Utils" },
@@ -188,7 +175,7 @@ function App() {
   useEffect(() => {
     //user may navigate away from fetch and you should be able to Abort fetch
     //modern browsers give AbortController object
-    //const controller = new AbortController();
+    const controller = new AbortController();
 
     //axios.get returns a promise
     //if promise is resolved, we get response obj
@@ -200,7 +187,7 @@ function App() {
     //with userServices separated as module
     //this effect hook has now knowledge of any HTTP request and its implementation details
     //concerns separated
-    const { request, cancel } = userServices.getAll<User>();
+    const { request, cancel } = userServices.getAllUsers();
     request
       .then((res) => {
         setUsers(res.data);
@@ -227,7 +214,7 @@ function App() {
 
     setUsers(users.filter((u) => u.id !== user.id));
     //axios
-    userServices.delete(user.id).catch((err) => {
+    userServices.deleteUser(user.id).catch((err) => {
       setError(err.message);
       setUsers(originalUsers);
     });
@@ -259,7 +246,7 @@ function App() {
     //savedUser alias is good to use
     //axios
     userServices
-      .create(newUser)
+      .createUser(newUser)
       .then(({ data: savedUser }) => setUsers([savedUser, ...users]))
       .catch((err) => {
         setError(err.message);
@@ -277,7 +264,7 @@ function App() {
 
     //axios
     userServices
-      .update(updatedUser)
+      .updateUser(updatedUser)
       .then(() => {
         console.log("Update User Successful");
       })
