@@ -11,6 +11,7 @@ import { literal } from "zod";
 //named export within braces
 import { CanceledError } from "./services/apiClient";
 import userServices, { User } from "./services/userServices";
+import useUsers from "./hooks/useUsers";
 
 //axios.get, axios.post, axios.patch uses same api end point repetadly
 //duplication of code and less control
@@ -140,7 +141,7 @@ function App() {
   const [category, setCategory] = useState("");
 
   //fetach users from jsonplaceholder using axios
-  const [users, setUsers] = useState<User[]>([]);
+
   //axios returns a promise
   //Promise: an object that holds eventual result or failure of an async operation
   //all promises have a method called then and it takes a callback function
@@ -181,10 +182,22 @@ function App() {
 
   //axios.get<User[]> is the data object fetched are of type User defined above in interface User
   //now res.data[0]. will auto complete to id, name, username
-  const [error, setError] = useState("");
   //isLoading and setLoading for spinner
-  const [isLoading, setLoading] = useState(false);
 
+  //getting many users, handling the error during that fetch and spinner during that process
+  //is common;
+  //in this App.tsx you see three useStates for it and a useEffect with getAll api call
+  //may be a custom hook to do all these in a module might help to use this operation
+  //in multiple components, not only on App.tsx
+
+  //so add folder hooks and a custom hook there with naming convetion prefix use
+  //useUsers.ts in hooks folder
+  /*
+  const [users, setUsers] = useState<User[]>([]);
+  const [error, setError] = useState("");
+  const [isLoading, setLoading] = useState(false);
+  */
+  /*
   useEffect(() => {
     //user may navigate away from fetch and you should be able to Abort fetch
     //modern browsers give AbortController object
@@ -215,7 +228,15 @@ function App() {
   }, []);
   //above line firtly was
   //res) => console.log(res.data[0].name)
+  */
 
+  //custom hook is useUsers from hooks folder useUsers module
+  //useUsers module returns a function with an object
+  //which are destructured here as { users, error, isLoading, setUsers, setError }
+  //advantage of this custom hook is if someother component needs to deal with all users
+  //and error handling around it, we can use this custom hook onliner and
+  //you have all objects like users, error, isLoading ....
+  const { users, error, isLoading, setUsers, setError } = useUsers();
   const deleteUser = (user: User) => {
     //in case axios.delete promise is rejected (delete failed)
     //in GUI you have to restore the origial users list
