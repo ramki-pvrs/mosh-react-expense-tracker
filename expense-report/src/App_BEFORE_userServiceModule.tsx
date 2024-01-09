@@ -9,8 +9,7 @@ import { literal } from "zod";
 
 //from api-client.ts default export without braces
 //named export within braces
-//import apiClient, { CanceledError } from "./services/apiClient";
-import userServices, { User } from "./services/userServices";
+import apiClient, { CanceledError } from "./services/apiClient";
 
 //axios.get, axios.post, axios.patch uses same api end point repetadly
 //duplication of code and less control
@@ -27,11 +26,11 @@ import userServices, { User } from "./services/userServices";
 //for example fetching users, if it is separated as service from here
 //other component may also use that service
 
-//separation of concerns
-//all user services like createUser, deleteUser, updateUser, fetch Users can be moved
-//to user-services.ts
-//for this you also need to move User interface to user-services.ts
-//and import User interface into App.tsx
+//request and cancel are normal functions wrt api calls
+//create a user-service.ts in services
+//handle all under the hood complexities there
+//make that service available here
+//because all user related services is moved to
 
 //enable TypeScript to add auto completion to response.data
 //by manually addig all keys as atttributes of the object below
@@ -49,14 +48,13 @@ import userServices, { User } from "./services/userServices";
 //if in case promise is rejected, you have forcefully update GUI again with
 //all users + deleted user so that end user knows that delete was not successful
 //and no change was made to users list and go for debugging
-/*
-moved to user-services.ts
+
 interface User {
   id: number;
   name: string;
   username: string;
 }
-*/
+
 function App() {
   const expenses_UNUSED = [
     { id: 1, description: "aaa", amount: 10, category: "Utils" },
@@ -184,11 +182,10 @@ function App() {
     //return controller.abort is part of clean-up/un-subscribe/disconnect kind of functionality
     setLoading(true);
     //axios
-    //with userServices separated as module
-    //this effect hook has now knowledge of any HTTP request and its implementation details
-    //concerns separated
-    const { request, cancel } = userServices.getAllUsers();
-    request
+    apiClient
+      .get<User[]>("/users", {
+        signal: controller.signal,
+      })
       .then((res) => {
         setUsers(res.data);
         setLoading(false);
@@ -198,7 +195,7 @@ function App() {
         setError(err.message);
         setLoading(false);
       });
-    return () => cancel();
+    return () => controller.abort();
   }, []);
   //above line firtly was
   //res) => console.log(res.data[0].name)
@@ -214,7 +211,7 @@ function App() {
 
     setUsers(users.filter((u) => u.id !== user.id));
     //axios
-    userServices.deleteUser(user.id).catch((err) => {
+    apiClient.delete("/users/" + user.id).catch((err) => {
       setError(err.message);
       setUsers(originalUsers);
     });
@@ -245,8 +242,8 @@ function App() {
     //because data as word is not explanatory about what it is
     //savedUser alias is good to use
     //axios
-    userServices
-      .createUser(newUser)
+    apiClient
+      .post("/users", newUser)
       .then(({ data: savedUser }) => setUsers([savedUser, ...users]))
       .catch((err) => {
         setError(err.message);
@@ -263,8 +260,8 @@ function App() {
     setUsers(users.map((u) => (u.id === user.id ? updatedUser : u)));
 
     //axios
-    userServices
-      .updateUser(updatedUser)
+    apiClient
+      .patch("/users/" + user.id, updatedUser)
       .then(() => {
         console.log("Update User Successful");
       })

@@ -10,22 +10,6 @@ interface Props {
 //like function ProductList({category}: {category: string})
 
 function ProductList({ category }: Props) {
-  //fetach users from jsonplaceholder using axios
-  const [users, setUsers] = useState([]);
-  //axios returns a promise
-  //Promise: an object that holds eventual result or failure of an async operation
-  //all promises have a method called then and it takes a callback function
-  //callback is executed when promise is resoved and result is ready
-  //param is response, or res in short
-
-  //res is complete response object including headers and status code and status name and all
-  //res.data shows only data
-
-  useEffect(() => {
-    axios
-      .get("https://jsonplaceholder.typicode.com/users")
-      .then((res) => console.log(res.data));
-  });
   const [products, setProducts] = useState<string[]>([]);
 
   //callBack function; react to call back to load the products list from somewhere
